@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A personal workspace for interview preparation.">
+<title>Interview notes · Nikhil Verma</title>
+<link rel="stylesheet" href="style.css?v=5">
+<script defer src="data.js"></script><script defer src="patterns.js"></script><script defer src="filter.js?v=5"></script><script defer src="app.js?v=5"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+<header class="site-header">
+  <a class="identity" href="#overview"><span>Interview notes</span></a>
+  <nav aria-label="Study tracks">
+    <a href="#overview">Overview</a>
+    <a href="#dsa">Problems</a>
+    <a href="#java">Java</a>
+    <a href="#lld">Low-level design</a>
+    <a href="#system">System design</a>
+  </nav>
+  <button id="theme" type="button"></button>
+</header>
+<main id="main" tabindex="-1">
+  <section id="intro"></section>
+  <section id="reading" hidden></section>
+  <section id="metrics" aria-label="LeetCode progress"></section>
+  <section id="tracker" aria-labelledby="tracker-title">
+    <div class="section-head"><div><h2 id="tracker-title">Problem list</h2></div><a id="tracker-source" class="text-link" target="_blank" rel="noopener">Original tracker</a></div>
+    <div class="panel">
+      <div class="filters">
+        <label class="search"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4" stroke-linecap="round"/></svg><input id="query" type="search" placeholder="Search by name or number" aria-label="Search problems"></label>
+        <div id="topic" class="filter-control"></div>
+        <div id="difficulty" class="filter-control"></div>
+        <div id="status" class="filter-control"></div>
+        <button id="reset-filters" type="button" hidden>Clear filters</button>
+      </div>
+      <p id="result-count" class="pattern-count" aria-live="polite"></p>
+      <div id="rows"></div>
+    </div>
+  </section>
+  <section id="study" hidden></section>
+  <footer><span>Interview notes</span><span id="save-note">Progress saved in this browser</span></footer>
+  <div class="sr-only" id="announcement" role="status"></div>
+</main>
+</div>
+</body>
+</html>
