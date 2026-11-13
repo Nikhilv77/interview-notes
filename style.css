@@ -181,3 +181,20 @@ footer {margin-top:50px;padding:12px 0 26px}
 .question-timestamps {display:block;margin-top:4px;color:var(--muted);font-family:var(--serif);font-size:13px;line-height:1.65;letter-spacing:.01em;font-weight:400}
 .question-timestamps em {font-style:italic}
 .pattern-question input:disabled {cursor:wait;opacity:.55}
+
+.password-dialog {box-sizing:border-box;width:min(440px,calc(100vw - 40px));max-height:calc(100dvh - 48px);padding:32px;border:0;border-radius:18px;background:var(--paper);color:var(--text);box-shadow:0 24px 90px #24221c30;overflow:auto}
+.password-dialog[open] {animation:arrive 220ms ease-out}
+.password-dialog::backdrop {background:rgba(37,36,31,.30);backdrop-filter:blur(5px)}
+.modal-eyebrow {margin:0 0 10px;font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.password-dialog h2 {font:400 32px/1.15 var(--serif);letter-spacing:-.025em;margin:0 0 12px}
+.modal-description {margin:0 0 26px;line-height:1.6;color:var(--muted);font-size:14px}
+.password-dialog label {display:block;font-size:13px;margin-bottom:9px;color:var(--muted)}
+.password-dialog input {box-sizing:border-box;display:block;width:100%;padding:12px 14px;min-height:48px;border:1px solid var(--rule);border-radius:9px;background:var(--field);color:var(--text);font:inherit;font-size:16px}
+.password-dialog input:focus-visible {outline:2px solid var(--blue);outline-offset:3px}
+.password-error {min-height:21px;margin:9px 0 19px;color:var(--red);font-size:12px;line-height:1.6}
+.modal-actions {display:flex;justify-content:flex-end;gap:10px}
+.modal-actions button {padding:10px 17px;min-height:44px;border:0;border-radius:8px;font:inherit;font-size:13px;background:var(--wash);color:var(--text);transition:opacity .15s ease}
+.modal-actions button[type=submit] {background:var(--blue);color:white}
+.modal-actions button:hover {opacity:.85}
+.modal-actions button:disabled {opacity:.55;cursor:wait}
+@media(max-width:480px) {.password-dialog {padding:26px}.password-dialog h2 {font-size:29px}}

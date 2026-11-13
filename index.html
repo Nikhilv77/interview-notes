@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="A personal workspace for interview preparation.">
 <title>Interview notes · Nikhil Verma</title>
-<link rel="stylesheet" href="style.css?v=7">
-<script defer src="data.js"></script><script defer src="patterns.js"></script><script defer src="filter.js?v=5"></script><script defer src="app.js?v=7"></script>
+<link rel="stylesheet" href="style.css?v=8">
+<script defer src="data.js"></script><script defer src="patterns.js"></script><script defer src="filter.js?v=5"></script><script defer src="app.js?v=8"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -45,6 +45,17 @@
   <div class="sr-only" id="announcement" role="status"></div>
 </main>
 </div>
+<dialog id="password-dialog" class="password-dialog" aria-labelledby="password-title" aria-describedby="password-description">
+  <form id="password-form">
+    <p class="modal-eyebrow">A little confirmation</p>
+    <h2 id="password-title">Update progress</h2>
+    <p id="password-description" class="modal-description"></p>
+    <label for="progress-password">Enter your password to save this change.</label>
+    <input id="progress-password" name="password" type="password" autocomplete="off" required maxlength="256" placeholder="Password" aria-describedby="password-error">
+    <p id="password-error" class="password-error" role="alert"></p>
+    <div class="modal-actions"><button id="password-cancel" type="button">Cancel</button><button id="password-submit" type="submit">Save change</button></div>
+  </form>
+</dialog>
 </body>
 </html>
 

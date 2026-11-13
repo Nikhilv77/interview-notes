@@ -32,7 +32,11 @@ async function cloudRequest(body) {
   const response = await fetch("/api/progress", body ? {
     method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)
   } : {cache:"no-store"});
-  if (!response.ok) throw new Error("Could not save progress");
+  if (!response.ok) {
+    const error = new Error(response.status === 401 ? "Incorrect password. Please try again." : "Couldn’t save. Please try again.");
+    error.status = response.status;
+    throw error;
+  }
   return response.json();
 }
 function refreshProgress() {
@@ -40,18 +44,11 @@ function refreshProgress() {
   else { renderDashboard(); renderRows(); }
 }
 async function loadCloud() {
-  if (pending.size || loading) return;
+  if (pending.size || loading || byId("password-dialog").open) return;
   loading = true;
   const startedAt = revision;
   try {
     let saved = await cloudRequest();
-    // Import older browser progress once, without replacing newer cloud actions.
-    let legacy;
-    try { legacy = JSON.parse(localStorage.getItem(storageKey)); } catch {}
-    if (legacy?.checked && Object.keys(legacy.checked).length) {
-      saved = await cloudRequest({action:"import",checked:legacy.checked,activity:legacy.activity || {}});
-      try { localStorage.removeItem(storageKey); } catch {}
-    }
     if (pending.size || revision !== startedAt) return;
     state.checked = saved.checked;
     state.activity = saved.activity;
@@ -62,28 +59,87 @@ async function loadCloud() {
     saveMessage("Couldn’t connect to saved progress. Refresh to retry.");
   } finally { loading = false; }
 }
-async function saveProgress(field, id) {
+let requestedChange = null;
+let modalSaving = false;
+function saveProgress(field, id) {
   if (!cloudReady || pending.has(id)) { refreshProgress(); return; }
-  revision++;
   const done = field.checked;
+  field.checked = !done;
+  requestedChange = {id, done, focusId:field.id};
+  byId("password-form").reset();
+  byId("password-error").textContent = "";
+  byId("progress-password").removeAttribute("aria-invalid");
+  byId("password-title").textContent = done ? "Mark as completed" : "Undo completion";
+  const item = problems.find(item => String(item[0]) === id);
+  const lesson = Object.values(study).flat().find(item => item.id === id);
+  byId("password-description").textContent = item?.[1] || lesson?.title || "Update your progress";
+  byId("password-submit").textContent = done ? "Mark done" : "Undo completion";
+  byId("password-dialog").showModal();
+  byId("progress-password").focus();
+}
+function closePassword() {
+  if (modalSaving) return;
+  const focusId = requestedChange?.focusId;
+  byId("password-dialog").close();
+  byId("password-form").reset();
+  requestedChange = null;
+  byId(focusId)?.focus({preventScroll:true});
+}
+byId("password-cancel").addEventListener("click",closePassword);
+byId("password-dialog").addEventListener("cancel",event => {event.preventDefault();closePassword();});
+byId("password-dialog").addEventListener("click",event => {
+  if (event.target === byId("password-dialog")) {
+    const rect = event.target.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closePassword();
+  }
+});
+byId("password-form").addEventListener("submit",async event => {
+  event.preventDefault();
+  if (!requestedChange || modalSaving) return;
+  const {id,done,focusId} = requestedChange;
+  const input = byId("progress-password");
+  const password = input.value;
+  modalSaving = true;
+  revision++;
   pending.add(id);
-  field.disabled = true;
-  saveMessage("Saving…");
+  byId("password-submit").disabled = true;
+  byId("password-cancel").disabled = true;
+  input.disabled = true;
+  byId("password-submit").textContent = "Saving…";
+  byId("password-error").textContent = "";
   try {
-    const result = await cloudRequest({id,done});
+    // Legacy browser data is imported only after password verification.
+    let legacy;
+    try { legacy = JSON.parse(localStorage.getItem(storageKey)); } catch {}
+    if (legacy?.checked && Object.keys(legacy.checked).length) {
+      const imported = await cloudRequest({action:"import",checked:legacy.checked,activity:legacy.activity || {},password});
+      state.checked = imported.checked;
+      state.activity = imported.activity;
+      try { localStorage.removeItem(storageKey); } catch {}
+    }
+    const result = await cloudRequest({id,done,password});
     state.checked[id] = result.done;
     state.activity[id] = {[result.done ? "doneAt" : "undoneAt"]:result.at};
     saveMessage("Progress saved online · shared across devices");
     byId("announcement").textContent = `${done ? "Completed" : "Undone"}. Progress saved.`;
-  } catch {
-    saveMessage("Couldn’t save that change. Please try again.");
-    byId("announcement").textContent = "Change not saved. Please try again.";
+    modalSaving = false;
+    closePassword();
+  } catch (error) {
+    byId("password-error").textContent = error.message;
+    input.setAttribute("aria-invalid", "true");
+    input.value = "";
   } finally {
+    modalSaving = false;
     pending.delete(id);
+    input.disabled = false;
+    byId("password-submit").disabled = false;
+    byId("password-cancel").disabled = false;
+    byId("password-submit").textContent = done ? "Mark done" : "Undo completion";
     refreshProgress();
-    byId(field.id)?.focus({preventScroll:true});
+    if (byId("password-dialog").open) input.focus();
+    else byId(focusId)?.focus({preventScroll:true});
   }
-}
+});
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[char]);

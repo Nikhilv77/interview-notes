@@ -1,7 +1,8 @@
 const {list,put} = require('@vercel/blob');
-const {randomUUID} = require('node:crypto');
+const {randomUUID,createHash,timingSafeEqual} = require('node:crypto');
 const validIds = new Set(require('../lib/progress-ids.json'));
-const prefix = 'progress/v1/';
+const prefix = 'progress/v2/';
+const seed = require('../lib/progress-seed.json');
 
 // Immutable event files prevent separate questions or concurrent writes from
 // overwriting one another. The filename indexes state without downloading files.
@@ -19,9 +20,10 @@ async function readProgress() {
     }
     cursor = page.hasMore ? page.cursor : undefined;
   } while (cursor);
-  const checked = {}, activity = {};
+  const checked = {...seed.checked}, activity = {...seed.activity};
   for (const [id,event] of latest) {
     checked[id] = event.done;
+    delete activity[id];
     if (event.time) activity[id] = {[event.done ? 'doneAt' : 'undoneAt']:new Date(event.time).toISOString()};
   }
   return {checked,activity};
@@ -39,6 +41,12 @@ module.exports = async function handler(req,res) {
     if (req.method === 'GET') return res.status(200).json(await readProgress());
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     if (!body || JSON.stringify(body).length > 80000) return res.status(400).json({error:'Invalid request'});
+    if (!process.env.PROGRESS_PASSWORD) return res.status(503).json({error:'Password is not configured'});
+    const digest = value => createHash('sha256').update(value).digest();
+    if (typeof body.password !== 'string' || body.password.length > 256 ||
+        !timingSafeEqual(digest(body.password),digest(process.env.PROGRESS_PASSWORD))) {
+      return res.status(401).json({error:'Incorrect password. Please try again.'});
+    }
     if (body.action === 'import') {
       const saved = await readProgress();
       const entries = Object.entries(body.checked || {}).filter(([id,done])=>validIds.has(id) && typeof done === 'boolean' && !Object.hasOwn(saved.checked,id));
