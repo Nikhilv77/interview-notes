@@ -20,28 +20,68 @@ const filters = [topic,difficulty,status];
 const milestones = [25, 50, 100, 150, 220];
 
 let route;
-let state = readState();
+let state = {checked:{}, activity:{}, theme:"light"};
+let cloudReady = false;
+let revision = 0;
+let loading = false;
+const pending = new Set();
+try { state.theme = localStorage.getItem("prep-theme") === "dark" ? "dark" : "light"; } catch {}
 
-function readState() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(storageKey));
-    if (saved && typeof saved === "object") {
-      return {
-        checked: saved.checked && typeof saved.checked === "object" ? saved.checked : {},
-        activity: saved.activity && typeof saved.activity === "object" && !Array.isArray(saved.activity) ? saved.activity : {},
-        theme: saved.edition === 2 && saved.theme === "dark" ? "dark" : "light"
-      };
-    }
-  } catch {}
-  return {checked:{}, activity:{}, theme:"light"};
+function saveMessage(text) { byId("save-note").textContent = text; }
+async function cloudRequest(body) {
+  const response = await fetch("/api/progress", body ? {
+    method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)
+  } : {cache:"no-store"});
+  if (!response.ok) throw new Error("Could not save progress");
+  return response.json();
 }
-
-function persist() {
+function refreshProgress() {
+  if (Object.hasOwn(study,route)) renderLessons();
+  else { renderDashboard(); renderRows(); }
+}
+async function loadCloud() {
+  if (pending.size || loading) return;
+  loading = true;
+  const startedAt = revision;
   try {
-    localStorage.setItem(storageKey, JSON.stringify({...state, edition:2}));
-    byId("save-note").textContent = "Progress saved in this browser";
+    let saved = await cloudRequest();
+    // Import older browser progress once, without replacing newer cloud actions.
+    let legacy;
+    try { legacy = JSON.parse(localStorage.getItem(storageKey)); } catch {}
+    if (legacy?.checked && Object.keys(legacy.checked).length) {
+      saved = await cloudRequest({action:"import",checked:legacy.checked,activity:legacy.activity || {}});
+      try { localStorage.removeItem(storageKey); } catch {}
+    }
+    if (pending.size || revision !== startedAt) return;
+    state.checked = saved.checked;
+    state.activity = saved.activity;
+    cloudReady = true;
+    refreshProgress();
+    saveMessage("Progress saved online · shared across devices");
   } catch {
-    byId("save-note").textContent = "Browser storage unavailable · changes last for this session";
+    saveMessage("Couldn’t connect to saved progress. Refresh to retry.");
+  } finally { loading = false; }
+}
+async function saveProgress(field, id) {
+  if (!cloudReady || pending.has(id)) { refreshProgress(); return; }
+  revision++;
+  const done = field.checked;
+  pending.add(id);
+  field.disabled = true;
+  saveMessage("Saving…");
+  try {
+    const result = await cloudRequest({id,done});
+    state.checked[id] = result.done;
+    state.activity[id] = {[result.done ? "doneAt" : "undoneAt"]:result.at};
+    saveMessage("Progress saved online · shared across devices");
+    byId("announcement").textContent = `${done ? "Completed" : "Undone"}. Progress saved.`;
+  } catch {
+    saveMessage("Couldn’t save that change. Please try again.");
+    byId("announcement").textContent = "Change not saved. Please try again.";
+  } finally {
+    pending.delete(id);
+    refreshProgress();
+    byId(field.id)?.focus({preventScroll:true});
   }
 }
 
@@ -54,30 +94,18 @@ function completed(id, initial) {
 }
 
 
-const istDateTime = new Intl.DateTimeFormat("en-IN", {
-  timeZone:"Asia/Kolkata", day:"numeric", month:"short", year:"numeric",
-  hour:"numeric", minute:"2-digit", second:"2-digit", hour12:true
+const istDate = new Intl.DateTimeFormat("en-IN", {
+  timeZone:"Asia/Kolkata", day:"numeric", month:"short", year:"numeric"
 });
-
+const istTime = new Intl.DateTimeFormat("en-IN", {
+  timeZone:"Asia/Kolkata", hour:"numeric", minute:"2-digit", hour12:true
+});
 function questionTimestamps(id) {
-  const activity = state.activity[id];
-  if (!activity || typeof activity !== "object") return "";
-  const entries = [["doneAt","Done"],["undoneAt","Undone"]]
-    .filter(([key]) => typeof activity[key] === "string" && Number.isFinite(Date.parse(activity[key])))
-    .sort(([a],[b]) => Date.parse(activity[a]) - Date.parse(activity[b]));
-  if (!entries.length) return "";
-  return '<small class="question-timestamps">' + entries.map(([key,label]) =>
-    `<span>${label} <time datetime="${escapeHtml(activity[key])}">${escapeHtml(istDateTime.format(new Date(activity[key])))} IST</time></span>`
-  ).join("") + "</small>";
-}
-
-function recordQuestion(id, done) {
-  state.checked[id] = done;
-  const previous = state.activity[id];
-  state.activity[id] = {
-    ...(previous && typeof previous === "object" ? previous : {}),
-    [done ? "doneAt" : "undoneAt"]:new Date().toISOString()
-  };
+  const done = state.checked[id] === true;
+  const value = state.activity[id]?.[done ? "doneAt" : "undoneAt"];
+  if (!value || !Number.isFinite(Date.parse(value))) return "";
+  const date = new Date(value);
+  return `<small class="question-timestamps"><em>${done ? "Completed" : "Undone"} on <time datetime="${escapeHtml(value)}">${istDate.format(date)} at ${istTime.format(date).toUpperCase()} IST</time></em></small>`;
 }
 
 function sourceLink(key) {
@@ -164,7 +192,7 @@ function renderRows(focusId) {
       if (!item.id) return `<p class="pattern-note">${trackerInline(item.text)}</p>`;
       if (!visibleIds.has(item.id)) return "";
       const [id,title,,,,initial] = problemById.get(item.id);
-      return `<label class="pattern-question"><input type="checkbox" id="problem-${id}" data-problem="${id}" aria-label="Solved: ${escapeHtml(title)}" ${completed(id,initial) ? "checked" : ""}><span class="serial">${id}.</span><span>${trackerInline(item.text)}${questionTimestamps(id)}</span></label>`;
+      return `<label class="pattern-question"><input type="checkbox" id="problem-${id}" data-problem="${id}" ${!cloudReady || pending.has(String(id)) ? "disabled" : ""} aria-label="Solved: ${escapeHtml(title)}" ${completed(id,initial) ? "checked" : ""}><span class="serial">${id}.</span><span>${trackerInline(item.text)}${questionTimestamps(id)}</span></label>`;
     }).join("");
     return `<section class="pattern-section"><h3>${escapeHtml(section.title)}</h3>${items}</section>`;
   }).join("") || '<p class="empty">No matching problems. Try a different search or clear the filters.</p>';
@@ -195,7 +223,7 @@ function renderLessons() {
   byId("study-count").textContent = `${items.filter(item => completed(item.id,item.done)).length} / ${items.length} complete`;
   byId("lessons").innerHTML = items.filter(item => `${item.title} ${item.group} ${item.description}`.toLowerCase().includes(query)).map(item => `
     <article class="lesson"><header><div><div class="eyebrow">${escapeHtml(item.group)}</div><h3>${escapeHtml(item.title)}</h3></div>
-    <input type="checkbox" id="${item.id}" data-lesson="${item.id}" aria-label="Complete: ${escapeHtml(item.title)}" ${completed(item.id,item.done)?"checked":""}></header>
+    <input type="checkbox" id="${item.id}" data-lesson="${item.id}" ${!cloudReady || pending.has(item.id) ? "disabled" : ""} aria-label="Complete: ${escapeHtml(item.title)}" ${completed(item.id,item.done)?"checked":""}></header>
     ${item.description ? `<p>${escapeHtml(item.description.replaceAll("**","").replaceAll("`",""))}</p>` : ""}</article>`).join("") || '<p class="empty">No study items match your search.</p>';
 }
 
@@ -238,24 +266,14 @@ byId("reset-filters").addEventListener("click",() => {
   search.focus();
 });
 byId("rows").addEventListener("change",event => {
-  const field = event.target;
-  if (!field.dataset.problem) return;
-  recordQuestion(field.dataset.problem, field.checked);
-  persist();
-  renderDashboard();
-  byId("announcement").textContent = `${stats().total.solved} of ${problems.length} problems solved`;
-  renderRows(field.id);
+  if (event.target.dataset.problem) saveProgress(event.target,event.target.dataset.problem);
 });
 byId("study").addEventListener("change",event => {
-  const field = event.target;
-  if (!field.dataset.lesson) return;
-  state.checked[field.dataset.lesson] = field.checked;
-  persist();
-  byId("study-count").textContent = `${study[route].filter(item => completed(item.id,item.done)).length} / ${study[route].length} complete`;
+  if (event.target.dataset.lesson) saveProgress(event.target,event.target.dataset.lesson);
 });
 byId("theme").addEventListener("click",() => {
   state.theme = state.theme === "dark" ? "light" : "dark";
-  persist();
+  try { localStorage.setItem("prep-theme",state.theme); } catch {}
   theme();
 });
 window.addEventListener("hashchange",() => {
@@ -263,15 +281,8 @@ window.addEventListener("hashchange",() => {
   renderRoute();
   window.scrollTo(0,0);
 });
-window.addEventListener("storage",event => {
-  if (event.key !== storageKey && event.key !== null) return;
-  state = readState();
-  theme();
-  if (Object.hasOwn(study,route)) renderLessons();
-  else {
-    renderDashboard();
-    renderRows();
-  }
-});
+window.addEventListener("focus",loadCloud);
 theme();
 renderRoute();
+saveMessage("Loading saved progress…");
+loadCloud();
