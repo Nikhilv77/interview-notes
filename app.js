@@ -28,11 +28,12 @@ function readState() {
     if (saved && typeof saved === "object") {
       return {
         checked: saved.checked && typeof saved.checked === "object" ? saved.checked : {},
+        activity: saved.activity && typeof saved.activity === "object" && !Array.isArray(saved.activity) ? saved.activity : {},
         theme: saved.edition === 2 && saved.theme === "dark" ? "dark" : "light"
       };
     }
   } catch {}
-  return {checked:{}, theme:"light"};
+  return {checked:{}, activity:{}, theme:"light"};
 }
 
 function persist() {
@@ -50,6 +51,33 @@ function escapeHtml(value) {
 
 function completed(id, initial) {
   return typeof state.checked[id] === "boolean" ? state.checked[id] : initial;
+}
+
+
+const istDateTime = new Intl.DateTimeFormat("en-IN", {
+  timeZone:"Asia/Kolkata", day:"numeric", month:"short", year:"numeric",
+  hour:"numeric", minute:"2-digit", second:"2-digit", hour12:true
+});
+
+function questionTimestamps(id) {
+  const activity = state.activity[id];
+  if (!activity || typeof activity !== "object") return "";
+  const entries = [["doneAt","Done"],["undoneAt","Undone"]]
+    .filter(([key]) => typeof activity[key] === "string" && Number.isFinite(Date.parse(activity[key])))
+    .sort(([a],[b]) => Date.parse(activity[a]) - Date.parse(activity[b]));
+  if (!entries.length) return "";
+  return '<small class="question-timestamps">' + entries.map(([key,label]) =>
+    `<span>${label} <time datetime="${escapeHtml(activity[key])}">${escapeHtml(istDateTime.format(new Date(activity[key])))} IST</time></span>`
+  ).join("") + "</small>";
+}
+
+function recordQuestion(id, done) {
+  state.checked[id] = done;
+  const previous = state.activity[id];
+  state.activity[id] = {
+    ...(previous && typeof previous === "object" ? previous : {}),
+    [done ? "doneAt" : "undoneAt"]:new Date().toISOString()
+  };
 }
 
 function sourceLink(key) {
@@ -136,7 +164,7 @@ function renderRows(focusId) {
       if (!item.id) return `<p class="pattern-note">${trackerInline(item.text)}</p>`;
       if (!visibleIds.has(item.id)) return "";
       const [id,title,,,,initial] = problemById.get(item.id);
-      return `<label class="pattern-question"><input type="checkbox" id="problem-${id}" data-problem="${id}" aria-label="Solved: ${escapeHtml(title)}" ${completed(id,initial) ? "checked" : ""}><span class="serial">${id}.</span><span>${trackerInline(item.text)}</span></label>`;
+      return `<label class="pattern-question"><input type="checkbox" id="problem-${id}" data-problem="${id}" aria-label="Solved: ${escapeHtml(title)}" ${completed(id,initial) ? "checked" : ""}><span class="serial">${id}.</span><span>${trackerInline(item.text)}${questionTimestamps(id)}</span></label>`;
     }).join("");
     return `<section class="pattern-section"><h3>${escapeHtml(section.title)}</h3>${items}</section>`;
   }).join("") || '<p class="empty">No matching problems. Try a different search or clear the filters.</p>';
@@ -212,11 +240,11 @@ byId("reset-filters").addEventListener("click",() => {
 byId("rows").addEventListener("change",event => {
   const field = event.target;
   if (!field.dataset.problem) return;
-  state.checked[field.dataset.problem] = field.checked;
+  recordQuestion(field.dataset.problem, field.checked);
   persist();
   renderDashboard();
   byId("announcement").textContent = `${stats().total.solved} of ${problems.length} problems solved`;
-  if (status.value) renderRows(field.id);
+  renderRows(field.id);
 });
 byId("study").addEventListener("change",event => {
   const field = event.target;

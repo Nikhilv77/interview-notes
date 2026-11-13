@@ -177,3 +177,6 @@ footer {margin-top:50px;padding:12px 0 26px}
 .pattern-note a {text-decoration:none}
 .pattern-note a:hover {text-decoration:underline}
 @media(max-width:590px) {.pattern-question {padding-inline:0;gap:5px;grid-template-columns:19px 28px minmax(0,1fr)}.pattern-section h3 {font-size:21px}}
+
+.question-timestamps {display:flex;flex-wrap:wrap;gap:2px 18px;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.7;font-weight:400;font-variant-numeric:tabular-nums}
+.question-timestamps > span {display:block}
