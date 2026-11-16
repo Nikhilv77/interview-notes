@@ -2,16 +2,19 @@
 
 const {problems, resources, study} = window.PREP_DATA;
 const labels = {overview:"Overview", dsa:"Practice problems", "full-dsa":"Full DSA", java:"Java", lld:"Low-level design", system:"System design"};
-const fullDsaTitle = "Expansion batch 1 · Arrays, Hashing, and Prefix Sums";
+const expansionBatches = window.FULL_DSA_EXPANSION;
+const expansionGroups = expansionBatches.flatMap(({groups}) => groups);
 const difficultyDots = {Easy:"🟢",Medium:"🟡",Hard:"🔴"};
-const expansionProblems = window.FULL_DSA_EXPANSION.flatMap(({title,questions}) =>
+const expansionProblems = expansionGroups.flatMap(({title,questions}) =>
   questions.map(([id,,name,url,level]) => [id,name,url,title,level,false])
 );
 const fullProblems = [...problems,...expansionProblems];
 const fullPatterns = [
   ...window.TRACKER_PATTERNS,
-  ...window.FULL_DSA_EXPANSION.map(({title,note,questions}) => ({
+  ...expansionBatches.flatMap((batch,index) => batch.groups.map(({title,note,questions}) => ({
     title,
+    batch,
+    batchNumber:index + 1,
     items:[
       {text:note},
       ...questions.map(([id,number,name,url,level]) => ({
@@ -19,7 +22,7 @@ const fullPatterns = [
         text:`[${number}. ${name}](${url}) — ${difficultyDots[level]} **${level}**`
       }))
     ]
-  }))
+  })))
 ];
 const descriptions = {
   java:"Practice Java fundamentals with short exercises in OOP, validation and thread safety.",
@@ -269,12 +272,14 @@ function renderRows(focusId) {
   const visibleIds = new Set(filtered.map(problem => problem[0]));
   const problemById = new Map(list.map(problem => [problem[0],problem]));
   const sections = (isFull ? fullPatterns : window.TRACKER_PATTERNS).filter(section => section.items.some(item => visibleIds.has(item.id)));
-  let showExpansionHeading = isFull;
+  const shownBatches = new Set();
   byId("rows").innerHTML = sections.map(section => {
-    const isExpansion = section.items.some(item => item.id > problems.length);
-    const heading = showExpansionHeading && isExpansion
-      ? `<div class="section-head expansion-heading"><h2>${fullDsaTitle}</h2></div>` : "";
-    if (isExpansion) showExpansionHeading = false;
+    let heading = "";
+    if (section.batch && !shownBatches.has(section.batch.id)) {
+      const {id,title} = section.batch;
+      heading = `<div class="section-head expansion-heading"><h2 id="batch-${id}" tabindex="-1">Expansion batch ${section.batchNumber} · ${escapeHtml(title)}</h2></div>`;
+      shownBatches.add(id);
+    }
     const items = section.items.map(item => {
       if (!item.id) return `<p class="pattern-note">${trackerInline(item.text)}</p>`;
       if (!visibleIds.has(item.id)) return "";
@@ -339,19 +344,23 @@ function renderRoute() {
   if (isStudy) renderStudy();
   else {
     if (route === "overview") renderOverview();
-    else if (isFull) byId("intro").innerHTML = `<div class="hero"><h1>Full DSA</h1><p>${fullProblems.length} of 400 questions added. Start with the original 220 or jump to the <button type="button" class="text-link batch-link" id="jump-expansion">arrays, hashing, and prefix sums batch</button>.</p></div>`;
+    else if (isFull) byId("intro").innerHTML = `<div class="hero"><h1>Full DSA</h1><p>${fullProblems.length} of 400 questions added.</p></div>
+      <div class="reading-links" aria-label="Jump to an expansion batch">${expansionBatches.map(({id,title}) =>
+        `<button type="button" class="batch-link" data-batch-jump="${id}">${escapeHtml(title)}</button>`
+      ).join("")}</div>`;
     else byId("intro").innerHTML = '<div class="hero"><h1>Practice problems</h1><p>Find a problem by topic or difficulty. Check it off when you solve it.</p></div>';
     renderDashboard();
     renderRows();
-    if (isFull) byId("jump-expansion").addEventListener("click",() => {
-      search.value = "";
-      filters.forEach(filter => filter.reset());
-      renderRows();
-      const heading = document.querySelector(".expansion-heading h2");
-      heading.tabIndex = -1;
-      heading.focus({preventScroll:true});
-      heading.scrollIntoView();
-    });
+    if (isFull) for (const button of byId("intro").querySelectorAll("[data-batch-jump]")) {
+      button.addEventListener("click",() => {
+        search.value = "";
+        filters.forEach(filter => filter.reset());
+        renderRows();
+        const heading = byId(`batch-${button.dataset.batchJump}`);
+        heading.focus({preventScroll:true});
+        heading.scrollIntoView();
+      });
+    }
   }
   document.title = `${route === "overview" ? "Interview notes" : labels[route]} · Nikhil Verma`;
   byId("intro").classList.remove("enter");
