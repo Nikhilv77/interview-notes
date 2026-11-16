@@ -1,790 +1,145 @@
 "use strict";
 
-const expansionBatchData = [
-  {
-    "id": "arrays-hashing-prefix-sums",
-    "title": "Arrays, Hashing, and Prefix Sums",
-    "groups": [
-      {
-        "title": "Hash maps, frequency counts, and array indexing",
-        "note": "Practice sets, frequency maps, grouping by a signature, and using bounded values as indices.",
-        "questions": [
-          [
-            221,
-            2215,
-            "Find the Difference of Two Arrays",
-            "https://leetcode.com/problems/find-the-difference-of-two-arrays/",
-            "Easy"
-          ],
-          [
-            222,
-            205,
-            "Isomorphic Strings",
-            "https://leetcode.com/problems/isomorphic-strings/",
-            "Easy"
-          ],
-          [
-            223,
-            49,
-            "Group Anagrams",
-            "https://leetcode.com/problems/group-anagrams/",
-            "Medium"
-          ],
-          [
-            224,
-            36,
-            "Valid Sudoku",
-            "https://leetcode.com/problems/valid-sudoku/",
-            "Medium"
-          ],
-          [
-            225,
-            454,
-            "4Sum II",
-            "https://leetcode.com/problems/4sum-ii/",
-            "Medium"
-          ],
-          [
-            226,
-            274,
-            "H-Index",
-            "https://leetcode.com/problems/h-index/",
-            "Medium"
-          ],
-          [
-            227,
-            442,
-            "Find All Duplicates in an Array",
-            "https://leetcode.com/problems/find-all-duplicates-in-an-array/",
-            "Medium"
-          ],
-          [
-            228,
-            41,
-            "First Missing Positive",
-            "https://leetcode.com/problems/first-missing-positive/",
-            "Hard"
-          ]
-        ]
-      },
-      {
-        "title": "Running sums and range queries",
-        "note": "Build a running total, subtract two prefixes, and extend that idea to rectangular queries.",
-        "questions": [
-          [
-            229,
-            303,
-            "Range Sum Query - Immutable",
-            "https://leetcode.com/problems/range-sum-query-immutable/",
-            "Easy"
-          ],
-          [
-            230,
-            724,
-            "Find Pivot Index",
-            "https://leetcode.com/problems/find-pivot-index/",
-            "Easy"
-          ],
-          [
-            231,
-            2256,
-            "Minimum Average Difference",
-            "https://leetcode.com/problems/minimum-average-difference/",
-            "Medium"
-          ],
-          [
-            232,
-            1685,
-            "Sum of Absolute Differences in a Sorted Array",
-            "https://leetcode.com/problems/sum-of-absolute-differences-in-a-sorted-array/",
-            "Medium"
-          ],
-          [
-            233,
-            304,
-            "Range Sum Query 2D - Immutable",
-            "https://leetcode.com/problems/range-sum-query-2d-immutable/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Prefix sums with hashing",
-        "note": "Notice what the map needs to store. Counting uses frequencies, while finding a longest span usually uses the earliest index.",
-        "questions": [
-          [
-            234,
-            560,
-            "Subarray Sum Equals K",
-            "https://leetcode.com/problems/subarray-sum-equals-k/",
-            "Medium"
-          ],
-          [
-            235,
-            525,
-            "Contiguous Array",
-            "https://leetcode.com/problems/contiguous-array/",
-            "Medium"
-          ],
-          [
-            236,
-            974,
-            "Subarray Sums Divisible by K",
-            "https://leetcode.com/problems/subarray-sums-divisible-by-k/",
-            "Medium"
-          ],
-          [
-            237,
-            523,
-            "Continuous Subarray Sum",
-            "https://leetcode.com/problems/continuous-subarray-sum/",
-            "Medium"
-          ],
-          [
-            238,
-            1124,
-            "Longest Well-Performing Interval",
-            "https://leetcode.com/problems/longest-well-performing-interval/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Difference arrays and advanced prefix sums",
-        "note": "Use boundary updates for ranges, binary search over cumulative weights, and ordered counting over prefix sums.",
-        "questions": [
-          [
-            239,
-            1109,
-            "Corporate Flight Bookings",
-            "https://leetcode.com/problems/corporate-flight-bookings/",
-            "Medium"
-          ],
-          [
-            240,
-            528,
-            "Random Pick with Weight",
-            "https://leetcode.com/problems/random-pick-with-weight/",
-            "Medium"
-          ],
-          [
-            241,
-            327,
-            "Count of Range Sum",
-            "https://leetcode.com/problems/count-of-range-sum/",
-            "Hard"
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "id": "two-pointers-sliding-window",
-    "title": "Two Pointers and Sliding Window",
-    "groups": [
-      {
-        "title": "Two pointers on sorted arrays and in-place writes",
-        "note": "Use sorted order to decide which pointer to move, or separate the positions you read and write.",
-        "questions": [
-          [
-            242,
-            977,
-            "Squares of a Sorted Array",
-            "https://leetcode.com/problems/squares-of-a-sorted-array/",
-            "Easy"
-          ],
-          [
-            243,
-            283,
-            "Move Zeroes",
-            "https://leetcode.com/problems/move-zeroes/",
-            "Easy"
-          ],
-          [
-            244,
-            167,
-            "Two Sum II - Input Array Is Sorted",
-            "https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/",
-            "Medium"
-          ],
-          [
-            245,
-            16,
-            "3Sum Closest",
-            "https://leetcode.com/problems/3sum-closest/",
-            "Medium"
-          ],
-          [
-            246,
-            881,
-            "Boats to Save People",
-            "https://leetcode.com/problems/boats-to-save-people/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Fixed-size windows",
-        "note": "Keep the window length fixed while updating the count, sum, or frequency of items entering and leaving.",
-        "questions": [
-          [
-            247,
-            1456,
-            "Maximum Number of Vowels in a Substring of Given Length",
-            "https://leetcode.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/",
-            "Medium"
-          ],
-          [
-            248,
-            1052,
-            "Grumpy Bookstore Owner",
-            "https://leetcode.com/problems/grumpy-bookstore-owner/",
-            "Medium"
-          ],
-          [
-            249,
-            438,
-            "Find All Anagrams in a String",
-            "https://leetcode.com/problems/find-all-anagrams-in-a-string/",
-            "Medium"
-          ],
-          [
-            250,
-            30,
-            "Substring with Concatenation of All Words",
-            "https://leetcode.com/problems/substring-with-concatenation-of-all-words/",
-            "Hard"
-          ]
-        ]
-      },
-      {
-        "title": "Variable-size windows",
-        "note": "Decide when a window becomes invalid and what must change before you can grow it again.",
-        "questions": [
-          [
-            251,
-            1004,
-            "Max Consecutive Ones III",
-            "https://leetcode.com/problems/max-consecutive-ones-iii/",
-            "Medium"
-          ],
-          [
-            252,
-            209,
-            "Minimum Size Subarray Sum",
-            "https://leetcode.com/problems/minimum-size-subarray-sum/",
-            "Medium"
-          ],
-          [
-            253,
-            904,
-            "Fruit Into Baskets",
-            "https://leetcode.com/problems/fruit-into-baskets/",
-            "Medium"
-          ],
-          [
-            254,
-            713,
-            "Subarray Product Less Than K",
-            "https://leetcode.com/problems/subarray-product-less-than-k/",
-            "Medium"
-          ],
-          [
-            255,
-            1838,
-            "Frequency of the Most Frequent Element",
-            "https://leetcode.com/problems/frequency-of-the-most-frequent-element/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Advanced window counting and prefix deques",
-        "note": "Count windows with exactly K distinct values, then compare positive-only windows with a problem that allows negative numbers.",
-        "questions": [
-          [
-            256,
-            992,
-            "Subarrays with K Different Integers",
-            "https://leetcode.com/problems/subarrays-with-k-different-integers/",
-            "Hard"
-          ],
-          [
-            257,
-            862,
-            "Shortest Subarray with Sum at Least K",
-            "https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/",
-            "Hard"
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "id": "intervals-greedy",
-    "title": "Intervals and Greedy Scheduling",
-    "groups": [
-      {
-        "title": "Interval insertion, intersections, and greedy choices",
-        "note": "Practice combining ranges, finding where ranges intersect, and choosing intervals by their endpoints.",
-        "questions": [
-          [
-            258,
-            57,
-            "Insert Interval",
-            "https://leetcode.com/problems/insert-interval/",
-            "Medium"
-          ],
-          [
-            259,
-            986,
-            "Interval List Intersections",
-            "https://leetcode.com/problems/interval-list-intersections/",
-            "Medium"
-          ],
-          [
-            260,
-            435,
-            "Non-overlapping Intervals",
-            "https://leetcode.com/problems/non-overlapping-intervals/",
-            "Medium"
-          ],
-          [
-            261,
-            452,
-            "Minimum Number of Arrows to Burst Balloons",
-            "https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Calendar conflicts and resource allocation",
-        "note": "Compare detecting a conflict, counting rooms, assigning rooms, and answering interval queries.",
-        "questions": [
-          [
-            262,
-            729,
-            "My Calendar I",
-            "https://leetcode.com/problems/my-calendar-i/",
-            "Medium"
-          ],
-          [
-            263,
-            2406,
-            "Divide Intervals Into Minimum Number of Groups",
-            "https://leetcode.com/problems/divide-intervals-into-minimum-number-of-groups/",
-            "Medium"
-          ],
-          [
-            264,
-            2402,
-            "Meeting Rooms III",
-            "https://leetcode.com/problems/meeting-rooms-iii/",
-            "Hard"
-          ],
-          [
-            265,
-            1851,
-            "Minimum Interval to Include Each Query",
-            "https://leetcode.com/problems/minimum-interval-to-include-each-query/",
-            "Hard"
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "id": "binary-search-boundaries",
-    "title": "Binary Search and Search on Answer",
-    "groups": [
-      {
-        "title": "Boundaries in sorted data",
-        "note": "Practice lower and upper bounds, finding a peak, locating a contiguous window, and looking up a timestamp.",
-        "questions": [
-          [
-            266,
-            35,
-            "Search Insert Position",
-            "https://leetcode.com/problems/search-insert-position/",
-            "Easy"
-          ],
-          [
-            267,
-            34,
-            "Find First and Last Position of Element in Sorted Array",
-            "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/",
-            "Medium"
-          ],
-          [
-            268,
-            162,
-            "Find Peak Element",
-            "https://leetcode.com/problems/find-peak-element/",
-            "Medium"
-          ],
-          [
-            269,
-            658,
-            "Find K Closest Elements",
-            "https://leetcode.com/problems/find-k-closest-elements/",
-            "Medium"
-          ],
-          [
-            270,
-            981,
-            "Time Based Key-Value Store",
-            "https://leetcode.com/problems/time-based-key-value-store/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Binary search on a feasible answer",
-        "note": "Define what makes a candidate feasible before deciding which half of the answer range to discard.",
-        "questions": [
-          [
-            271,
-            69,
-            "Sqrt(x)",
-            "https://leetcode.com/problems/sqrtx/",
-            "Easy"
-          ],
-          [
-            272,
-            1011,
-            "Capacity To Ship Packages Within D Days",
-            "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/",
-            "Medium"
-          ],
-          [
-            273,
-            1482,
-            "Minimum Number of Days to Make m Bouquets",
-            "https://leetcode.com/problems/minimum-number-of-days-to-make-m-bouquets/",
-            "Medium"
-          ],
-          [
-            274,
-            410,
-            "Split Array Largest Sum",
-            "https://leetcode.com/problems/split-array-largest-sum/",
-            "Hard"
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "id": "graph-modeling-paths",
-    "title": "Graph Modeling and Paths",
-    "groups": [
-      {
-        "title": "Building and interpreting a graph",
-        "note": "Translate paths, trust relationships, ratios, and shared emails into a graph or connected components.",
-        "questions": [
-          [
-            275,
-            1971,
-            "Find if Path Exists in Graph",
-            "https://leetcode.com/problems/find-if-path-exists-in-graph/",
-            "Easy"
-          ],
-          [
-            276,
-            997,
-            "Find the Town Judge",
-            "https://leetcode.com/problems/find-the-town-judge/",
-            "Easy"
-          ],
-          [
-            277,
-            399,
-            "Evaluate Division",
-            "https://leetcode.com/problems/evaluate-division/",
-            "Medium"
-          ],
-          [
-            278,
-            721,
-            "Accounts Merge",
-            "https://leetcode.com/problems/accounts-merge/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Reachability and shortest paths in grids",
-        "note": "Compare boundary traversal, an unweighted shortest path, reverse reachability, and a path scored by its highest elevation.",
-        "questions": [
-          [
-            279,
-            130,
-            "Surrounded Regions",
-            "https://leetcode.com/problems/surrounded-regions/",
-            "Medium"
-          ],
-          [
-            280,
-            1091,
-            "Shortest Path in Binary Matrix",
-            "https://leetcode.com/problems/shortest-path-in-binary-matrix/",
-            "Medium"
-          ],
-          [
-            281,
-            417,
-            "Pacific Atlantic Water Flow",
-            "https://leetcode.com/problems/pacific-atlantic-water-flow/",
-            "Medium"
-          ],
-          [
-            282,
-            778,
-            "Swim in Rising Water",
-            "https://leetcode.com/problems/swim-in-rising-water/",
-            "Hard"
-          ]
-        ]
-      },
-      {
-        "title": "Cycles, constrained paths, and implicit graphs",
-        "note": "Track how direction, stop limits, and on-demand neighbors affect the state you need.",
-        "questions": [
-          [
-            283,
-            684,
-            "Redundant Connection",
-            "https://leetcode.com/problems/redundant-connection/",
-            "Medium"
-          ],
-          [
-            284,
-            802,
-            "Find Eventual Safe States",
-            "https://leetcode.com/problems/find-eventual-safe-states/",
-            "Medium"
-          ],
-          [
-            285,
-            787,
-            "Cheapest Flights Within K Stops",
-            "https://leetcode.com/problems/cheapest-flights-within-k-stops/",
-            "Medium"
-          ],
-          [
-            286,
-            127,
-            "Word Ladder",
-            "https://leetcode.com/problems/word-ladder/",
-            "Hard"
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "id": "tree-paths-state",
-    "title": "Trees, Path State, and BST Updates",
-    "groups": [
-      {
-        "title": "Root-to-leaf state and subtree checks",
-        "note": "Decide what to carry down a path and when to compare whole subtrees. Revisit prefix sums in a tree.",
-        "questions": [
-          [
-            287,
-            112,
-            "Path Sum",
-            "https://leetcode.com/problems/path-sum/",
-            "Easy"
-          ],
-          [
-            288,
-            572,
-            "Subtree of Another Tree",
-            "https://leetcode.com/problems/subtree-of-another-tree/",
-            "Easy"
-          ],
-          [
-            289,
-            1448,
-            "Count Good Nodes in Binary Tree",
-            "https://leetcode.com/problems/count-good-nodes-in-binary-tree/",
-            "Medium"
-          ],
-          [
-            290,
-            129,
-            "Sum Root to Leaf Numbers",
-            "https://leetcode.com/problems/sum-root-to-leaf-numbers/",
-            "Medium"
-          ],
-          [
-            291,
-            437,
-            "Path Sum III",
-            "https://leetcode.com/problems/path-sum-iii/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Parent links, BST deletion, and bottom-up decisions",
-        "note": "Practice moving toward a parent, preserving BST order after deletion, and passing subtree decisions back up.",
-        "questions": [
-          [
-            292,
-            863,
-            "All Nodes Distance K in Binary Tree",
-            "https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/",
-            "Medium"
-          ],
-          [
-            293,
-            450,
-            "Delete Node in a BST",
-            "https://leetcode.com/problems/delete-node-in-a-bst/",
-            "Medium"
-          ],
-          [
-            294,
-            337,
-            "House Robber III",
-            "https://leetcode.com/problems/house-robber-iii/",
-            "Medium"
-          ],
-          [
-            295,
-            968,
-            "Binary Tree Cameras",
-            "https://leetcode.com/problems/binary-tree-cameras/",
-            "Hard"
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "id": "dp-state-recurrences",
-    "title": "Dynamic Programming and State Design",
-    "groups": [
-      {
-        "title": "Recurrences, counting, and grid states",
-        "note": "Build from a short recurrence to counting ordered choices and combining neighboring grid states.",
-        "questions": [
-          [
-            296,
-            1137,
-            "N-th Tribonacci Number",
-            "https://leetcode.com/problems/n-th-tribonacci-number/",
-            "Easy"
-          ],
-          [
-            297,
-            377,
-            "Combination Sum IV",
-            "https://leetcode.com/problems/combination-sum-iv/",
-            "Medium"
-          ],
-          [
-            298,
-            221,
-            "Maximal Square",
-            "https://leetcode.com/problems/maximal-square/",
-            "Medium"
-          ]
-        ]
-      },
-      {
-        "title": "Substrings, subarrays, and subsequences",
-        "note": "Distinguish contiguous matches from subsequences and choose state that reflects the difference.",
-        "questions": [
-          [
-            299,
-            647,
-            "Palindromic Substrings",
-            "https://leetcode.com/problems/palindromic-substrings/",
-            "Medium"
-          ],
-          [
-            300,
-            718,
-            "Maximum Length of Repeated Subarray",
-            "https://leetcode.com/problems/maximum-length-of-repeated-subarray/",
-            "Medium"
-          ],
-          [
-            301,
-            115,
-            "Distinct Subsequences",
-            "https://leetcode.com/problems/distinct-subsequences/",
-            "Hard"
-          ]
-        ]
-      },
-      {
-        "title": "State with a difference or two boundaries",
-        "note": "Track a difference for arithmetic subsequences and use interval states for games and splitting problems.",
-        "questions": [
-          [
-            302,
-            1027,
-            "Longest Arithmetic Subsequence",
-            "https://leetcode.com/problems/longest-arithmetic-subsequence/",
-            "Medium"
-          ],
-          [
-            303,
-            486,
-            "Predict the Winner",
-            "https://leetcode.com/problems/predict-the-winner/",
-            "Medium"
-          ],
-          [
-            304,
-            312,
-            "Burst Balloons",
-            "https://leetcode.com/problems/burst-balloons/",
-            "Hard"
-          ]
-        ]
-      }
-    ]
-  },
-  {
-    "id": "data-structure-design",
-    "title": "Data Structure Design",
-    "groups": [
-      {
-        "title": "Fast lookup, history, and versioned reads",
-        "note": "Choose a representation that makes each required operation efficient, including random selection and historical lookup.",
-        "questions": [
-          [
-            305,
-            380,
-            "Insert Delete GetRandom O(1)",
-            "https://leetcode.com/problems/insert-delete-getrandom-o1/",
-            "Medium"
-          ],
-          [
-            306,
-            1472,
-            "Design Browser History",
-            "https://leetcode.com/problems/design-browser-history/",
-            "Medium"
-          ],
-          [
-            307,
-            1146,
-            "Snapshot Array",
-            "https://leetcode.com/problems/snapshot-array/",
-            "Medium"
-          ]
-        ]
-      }
-    ]
-  }
+// The last value is the first original question ID in the existing pattern.
+const fullDsaAdditions = [
+  [221,2215,"Find the Difference of Two Arrays","https://leetcode.com/problems/find-the-difference-of-two-arrays/","Easy",9],
+  [222,205,"Isomorphic Strings","https://leetcode.com/problems/isomorphic-strings/","Easy",9],
+  [223,49,"Group Anagrams","https://leetcode.com/problems/group-anagrams/","Medium",9],
+  [224,36,"Valid Sudoku","https://leetcode.com/problems/valid-sudoku/","Medium",49],
+  [225,454,"4Sum II","https://leetcode.com/problems/4sum-ii/","Medium",38],
+  [226,274,"H-Index","https://leetcode.com/problems/h-index/","Medium",1],
+  [227,442,"Find All Duplicates in an Array","https://leetcode.com/problems/find-all-duplicates-in-an-array/","Medium",1],
+  [228,41,"First Missing Positive","https://leetcode.com/problems/first-missing-positive/","Hard",1],
+  [229,303,"Range Sum Query - Immutable","https://leetcode.com/problems/range-sum-query-immutable/","Easy",38],
+  [230,724,"Find Pivot Index","https://leetcode.com/problems/find-pivot-index/","Easy",38],
+  [231,2256,"Minimum Average Difference","https://leetcode.com/problems/minimum-average-difference/","Medium",38],
+  [232,1685,"Sum of Absolute Differences in a Sorted Array","https://leetcode.com/problems/sum-of-absolute-differences-in-a-sorted-array/","Medium",38],
+  [233,304,"Range Sum Query 2D - Immutable","https://leetcode.com/problems/range-sum-query-2d-immutable/","Medium",49],
+  [234,560,"Subarray Sum Equals K","https://leetcode.com/problems/subarray-sum-equals-k/","Medium",38],
+  [235,525,"Contiguous Array","https://leetcode.com/problems/contiguous-array/","Medium",38],
+  [236,974,"Subarray Sums Divisible by K","https://leetcode.com/problems/subarray-sums-divisible-by-k/","Medium",38],
+  [237,523,"Continuous Subarray Sum","https://leetcode.com/problems/continuous-subarray-sum/","Medium",38],
+  [238,1124,"Longest Well-Performing Interval","https://leetcode.com/problems/longest-well-performing-interval/","Medium",38],
+  [239,1109,"Corporate Flight Bookings","https://leetcode.com/problems/corporate-flight-bookings/","Medium",38],
+  [240,528,"Random Pick with Weight","https://leetcode.com/problems/random-pick-with-weight/","Medium",103],
+  [241,327,"Count of Range Sum","https://leetcode.com/problems/count-of-range-sum/","Hard",56],
+  [242,977,"Squares of a Sorted Array","https://leetcode.com/problems/squares-of-a-sorted-array/","Easy",30],
+  [243,283,"Move Zeroes","https://leetcode.com/problems/move-zeroes/","Easy",35],
+  [244,167,"Two Sum II - Input Array Is Sorted","https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/","Medium",30],
+  [245,16,"3Sum Closest","https://leetcode.com/problems/3sum-closest/","Medium",30],
+  [246,881,"Boats to Save People","https://leetcode.com/problems/boats-to-save-people/","Medium",30],
+  [247,1456,"Maximum Number of Vowels in a Substring of Given Length","https://leetcode.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/","Medium",46],
+  [248,1052,"Grumpy Bookstore Owner","https://leetcode.com/problems/grumpy-bookstore-owner/","Medium",46],
+  [249,438,"Find All Anagrams in a String","https://leetcode.com/problems/find-all-anagrams-in-a-string/","Medium",46],
+  [250,30,"Substring with Concatenation of All Words","https://leetcode.com/problems/substring-with-concatenation-of-all-words/","Hard",46],
+  [251,1004,"Max Consecutive Ones III","https://leetcode.com/problems/max-consecutive-ones-iii/","Medium",46],
+  [252,209,"Minimum Size Subarray Sum","https://leetcode.com/problems/minimum-size-subarray-sum/","Medium",46],
+  [253,904,"Fruit Into Baskets","https://leetcode.com/problems/fruit-into-baskets/","Medium",46],
+  [254,713,"Subarray Product Less Than K","https://leetcode.com/problems/subarray-product-less-than-k/","Medium",46],
+  [255,1838,"Frequency of the Most Frequent Element","https://leetcode.com/problems/frequency-of-the-most-frequent-element/","Medium",46],
+  [256,992,"Subarrays with K Different Integers","https://leetcode.com/problems/subarrays-with-k-different-integers/","Hard",46],
+  [257,862,"Shortest Subarray with Sum at Least K","https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/","Hard",86],
+  [258,57,"Insert Interval","https://leetcode.com/problems/insert-interval/","Medium",58],
+  [259,986,"Interval List Intersections","https://leetcode.com/problems/interval-list-intersections/","Medium",58],
+  [260,435,"Non-overlapping Intervals","https://leetcode.com/problems/non-overlapping-intervals/","Medium",121],
+  [261,452,"Minimum Number of Arrows to Burst Balloons","https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/","Medium",121],
+  [262,729,"My Calendar I","https://leetcode.com/problems/my-calendar-i/","Medium",58],
+  [263,2406,"Divide Intervals Into Minimum Number of Groups","https://leetcode.com/problems/divide-intervals-into-minimum-number-of-groups/","Medium",58],
+  [264,2402,"Meeting Rooms III","https://leetcode.com/problems/meeting-rooms-iii/","Hard",119],
+  [265,1851,"Minimum Interval to Include Each Query","https://leetcode.com/problems/minimum-interval-to-include-each-query/","Hard",58],
+  [266,35,"Search Insert Position","https://leetcode.com/problems/search-insert-position/","Easy",103],
+  [267,34,"Find First and Last Position of Element in Sorted Array","https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/","Medium",103],
+  [268,162,"Find Peak Element","https://leetcode.com/problems/find-peak-element/","Medium",103],
+  [269,658,"Find K Closest Elements","https://leetcode.com/problems/find-k-closest-elements/","Medium",103],
+  [270,981,"Time Based Key-Value Store","https://leetcode.com/problems/time-based-key-value-store/","Medium",103],
+  [271,69,"Sqrt(x)","https://leetcode.com/problems/sqrtx/","Easy",106],
+  [272,1011,"Capacity To Ship Packages Within D Days","https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/","Medium",106],
+  [273,1482,"Minimum Number of Days to Make m Bouquets","https://leetcode.com/problems/minimum-number-of-days-to-make-m-bouquets/","Medium",106],
+  [274,410,"Split Array Largest Sum","https://leetcode.com/problems/split-array-largest-sum/","Hard",106],
+  [275,1971,"Find if Path Exists in Graph","https://leetcode.com/problems/find-if-path-exists-in-graph/","Easy",180],
+  [276,997,"Find the Town Judge","https://leetcode.com/problems/find-the-town-judge/","Easy",180],
+  [277,399,"Evaluate Division","https://leetcode.com/problems/evaluate-division/","Medium",180],
+  [278,721,"Accounts Merge","https://leetcode.com/problems/accounts-merge/","Medium",194],
+  [279,130,"Surrounded Regions","https://leetcode.com/problems/surrounded-regions/","Medium",185],
+  [280,1091,"Shortest Path in Binary Matrix","https://leetcode.com/problems/shortest-path-in-binary-matrix/","Medium",185],
+  [281,417,"Pacific Atlantic Water Flow","https://leetcode.com/problems/pacific-atlantic-water-flow/","Medium",185],
+  [282,778,"Swim in Rising Water","https://leetcode.com/problems/swim-in-rising-water/","Hard",192],
+  [283,684,"Redundant Connection","https://leetcode.com/problems/redundant-connection/","Medium",194],
+  [284,802,"Find Eventual Safe States","https://leetcode.com/problems/find-eventual-safe-states/","Medium",190],
+  [285,787,"Cheapest Flights Within K Stops","https://leetcode.com/problems/cheapest-flights-within-k-stops/","Medium",192],
+  [286,127,"Word Ladder","https://leetcode.com/problems/word-ladder/","Hard",180],
+  [287,112,"Path Sum","https://leetcode.com/problems/path-sum/","Easy",143],
+  [288,572,"Subtree of Another Tree","https://leetcode.com/problems/subtree-of-another-tree/","Easy",143],
+  [289,1448,"Count Good Nodes in Binary Tree","https://leetcode.com/problems/count-good-nodes-in-binary-tree/","Medium",143],
+  [290,129,"Sum Root to Leaf Numbers","https://leetcode.com/problems/sum-root-to-leaf-numbers/","Medium",143],
+  [291,437,"Path Sum III","https://leetcode.com/problems/path-sum-iii/","Medium",143],
+  [292,863,"All Nodes Distance K in Binary Tree","https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/","Medium",149],
+  [293,450,"Delete Node in a BST","https://leetcode.com/problems/delete-node-in-a-bst/","Medium",166],
+  [294,337,"House Robber III","https://leetcode.com/problems/house-robber-iii/","Medium",143],
+  [295,968,"Binary Tree Cameras","https://leetcode.com/problems/binary-tree-cameras/","Hard",143],
+  [296,1137,"N-th Tribonacci Number","https://leetcode.com/problems/n-th-tribonacci-number/","Easy",195],
+  [297,377,"Combination Sum IV","https://leetcode.com/problems/combination-sum-iv/","Medium",206],
+  [298,221,"Maximal Square","https://leetcode.com/problems/maximal-square/","Medium",200],
+  [299,647,"Palindromic Substrings","https://leetcode.com/problems/palindromic-substrings/","Medium",208],
+  [300,718,"Maximum Length of Repeated Subarray","https://leetcode.com/problems/maximum-length-of-repeated-subarray/","Medium",208],
+  [301,115,"Distinct Subsequences","https://leetcode.com/problems/distinct-subsequences/","Hard",208],
+  [302,1027,"Longest Arithmetic Subsequence","https://leetcode.com/problems/longest-arithmetic-subsequence/","Medium",212],
+  [303,486,"Predict the Winner","https://leetcode.com/problems/predict-the-winner/","Medium",195],
+  [304,312,"Burst Balloons","https://leetcode.com/problems/burst-balloons/","Hard",195],
+  [305,380,"Insert Delete GetRandom O(1)","https://leetcode.com/problems/insert-delete-getrandom-o1/","Medium",86],
+  [306,1472,"Design Browser History","https://leetcode.com/problems/design-browser-history/","Medium",86],
+  [307,1146,"Snapshot Array","https://leetcode.com/problems/snapshot-array/","Medium",103],
+  [308,203,"Remove Linked List Elements","https://leetcode.com/problems/remove-linked-list-elements/","Easy",17],
+  [309,92,"Reverse Linked List II","https://leetcode.com/problems/reverse-linked-list-ii/","Medium",69],
+  [310,24,"Swap Nodes in Pairs","https://leetcode.com/problems/swap-nodes-in-pairs/","Medium",69],
+  [311,86,"Partition List","https://leetcode.com/problems/partition-list/","Medium",70],
+  [312,148,"Sort List","https://leetcode.com/problems/sort-list/","Medium",70],
+  [313,503,"Next Greater Element II","https://leetcode.com/problems/next-greater-element-ii/","Medium",79],
+  [314,402,"Remove K Digits","https://leetcode.com/problems/remove-k-digits/","Medium",79],
+  [315,316,"Remove Duplicate Letters","https://leetcode.com/problems/remove-duplicate-letters/","Medium",79],
+  [316,394,"Decode String","https://leetcode.com/problems/decode-string/","Medium",86],
+  [317,735,"Asteroid Collision","https://leetcode.com/problems/asteroid-collision/","Medium",86],
+  [318,150,"Evaluate Reverse Polish Notation","https://leetcode.com/problems/evaluate-reverse-polish-notation/","Medium",86],
+  [319,224,"Basic Calculator","https://leetcode.com/problems/basic-calculator/","Hard",86],
+  [320,392,"Is Subsequence","https://leetcode.com/problems/is-subsequence/","Easy",30],
+  [321,680,"Valid Palindrome II","https://leetcode.com/problems/valid-palindrome-ii/","Easy",30],
+  [322,443,"String Compression","https://leetcode.com/problems/string-compression/","Medium",35],
+  [323,71,"Simplify Path","https://leetcode.com/problems/simplify-path/","Medium",86],
+  [324,1046,"Last Stone Weight","https://leetcode.com/problems/last-stone-weight/","Easy",113],
+  [325,973,"K Closest Points to Origin","https://leetcode.com/problems/k-closest-points-to-origin/","Medium",113],
+  [326,373,"Find K Pairs with Smallest Sums","https://leetcode.com/problems/find-k-pairs-with-smallest-sums/","Medium",113],
+  [327,767,"Reorganize String","https://leetcode.com/problems/reorganize-string/","Medium",119],
+  [328,1834,"Single-Threaded CPU","https://leetcode.com/problems/single-threaded-cpu/","Medium",119],
+  [329,502,"IPO","https://leetcode.com/problems/ipo/","Hard",113],
+  [330,860,"Lemonade Change","https://leetcode.com/problems/lemonade-change/","Easy",63],
+  [331,1029,"Two City Scheduling","https://leetcode.com/problems/two-city-scheduling/","Medium",121],
+  [332,135,"Candy","https://leetcode.com/problems/candy/","Hard",63],
+  [333,78,"Subsets","https://leetcode.com/problems/subsets/","Medium",127],
+  [334,216,"Combination Sum III","https://leetcode.com/problems/combination-sum-iii/","Medium",127],
+  [335,93,"Restore IP Addresses","https://leetcode.com/problems/restore-ip-addresses/","Medium",139],
+  [336,47,"Permutations II","https://leetcode.com/problems/permutations-ii/","Medium",133],
+  [337,473,"Matchsticks to Square","https://leetcode.com/problems/matchsticks-to-square/","Medium",133],
+  [338,212,"Word Search II","https://leetcode.com/problems/word-search-ii/","Hard",217],
+  [339,841,"Keys and Rooms","https://leetcode.com/problems/keys-and-rooms/","Medium",180],
+  [340,1462,"Course Schedule IV","https://leetcode.com/problems/course-schedule-iv/","Medium",190],
+  [341,1584,"Min Cost to Connect All Points","https://leetcode.com/problems/min-cost-to-connect-all-points/","Medium",194],
+  [342,1631,"Path With Minimum Effort","https://leetcode.com/problems/path-with-minimum-effort/","Medium",192],
+  [343,1192,"Critical Connections in a Network","https://leetcode.com/problems/critical-connections-in-a-network/","Hard",180],
+  [344,695,"Max Area of Island","https://leetcode.com/problems/max-area-of-island/","Medium",185],
+  [345,111,"Minimum Depth of Binary Tree","https://leetcode.com/problems/minimum-depth-of-binary-tree/","Easy",149],
+  [346,404,"Sum of Left Leaves","https://leetcode.com/problems/sum-of-left-leaves/","Easy",143],
+  [347,669,"Trim a Binary Search Tree","https://leetcode.com/problems/trim-a-binary-search-tree/","Medium",166],
+  [348,99,"Recover Binary Search Tree","https://leetcode.com/problems/recover-binary-search-tree/","Medium",166],
+  [349,513,"Find Bottom Left Tree Value","https://leetcode.com/problems/find-bottom-left-tree-value/","Medium",149],
+  [350,509,"Fibonacci Number","https://leetcode.com/problems/fibonacci-number/","Easy",195],
+  [351,583,"Delete Operation for Two Strings","https://leetcode.com/problems/delete-operation-for-two-strings/","Medium",208],
+  [352,279,"Perfect Squares","https://leetcode.com/problems/perfect-squares/","Medium",206],
+  [353,673,"Number of Longest Increasing Subsequence","https://leetcode.com/problems/number-of-longest-increasing-subsequence/","Medium",212],
+  [354,123,"Best Time to Buy and Sell Stock III","https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/","Hard",213],
+  [355,189,"Rotate Array","https://leetcode.com/problems/rotate-array/","Medium",1],
+  [356,448,"Find All Numbers Disappeared in an Array","https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/","Easy",1],
+  [357,1010,"Pairs of Songs With Total Durations Divisible by 60","https://leetcode.com/problems/pairs-of-songs-with-total-durations-divisible-by-60/","Medium",38]
 ];
 
-if (typeof module !== "undefined" && module.exports) module.exports = expansionBatchData;
-else window.FULL_DSA_EXPANSION = expansionBatchData;
+if (typeof module !== "undefined" && module.exports) module.exports = fullDsaAdditions;
+else window.FULL_DSA_ADDITIONS = fullDsaAdditions;

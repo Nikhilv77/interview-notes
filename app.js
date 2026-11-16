@@ -2,28 +2,28 @@
 
 const {problems, resources, study} = window.PREP_DATA;
 const labels = {overview:"Overview", dsa:"Practice problems", "full-dsa":"Full DSA", java:"Java", lld:"Low-level design", system:"System design"};
-const expansionBatches = window.FULL_DSA_EXPANSION;
-const expansionGroups = expansionBatches.flatMap(({groups}) => groups);
 const difficultyDots = {Easy:"🟢",Medium:"🟡",Hard:"🔴"};
-const expansionProblems = expansionGroups.flatMap(({title,questions}) =>
-  questions.map(([id,,name,url,level]) => [id,name,url,title,level,false])
-);
+const additionsByPattern = new Map();
+const originalTopics = new Map(problems.map(([id,,,topic]) => [id,topic]));
+const expansionProblems = window.FULL_DSA_ADDITIONS.map(([id,number,name,url,level,anchor]) => {
+  if (!additionsByPattern.has(anchor)) additionsByPattern.set(anchor,[]);
+  additionsByPattern.get(anchor).push({
+    id,
+    text:`[${number}. ${name}](${url}) — ${difficultyDots[level]} **${level}**`
+  });
+  return [id,name,url,originalTopics.get(anchor),level,false];
+});
 const fullProblems = [...problems,...expansionProblems];
-const fullPatterns = [
-  ...window.TRACKER_PATTERNS,
-  ...expansionBatches.flatMap((batch,index) => batch.groups.map(({title,note,questions}) => ({
-    title,
-    batch,
-    batchNumber:index + 1,
-    items:[
-      {text:note},
-      ...questions.map(([id,number,name,url,level]) => ({
-        id,
-        text:`[${number}. ${name}](${url}) — ${difficultyDots[level]} **${level}**`
-      }))
-    ]
-  })))
-];
+const fullPatterns = window.TRACKER_PATTERNS.map(({title,items}) => {
+  const extra = additionsByPattern.get(items.find(item => item.id).id) || [];
+  const lastQuestion = items.findLastIndex(item => item.id);
+  const count = items.filter(item => item.id).length + extra.length;
+  const name = title.replace(/(?: \(\d+\)| — \d+ (?:new(?: exercises)?|questions?))$/,"");
+  return {
+    title:`${name} — ${count} ${count === 1 ? "question" : "questions"}`,
+    items:[...items.slice(0,lastQuestion + 1),...extra,...items.slice(lastQuestion + 1)]
+  };
+});
 const descriptions = {
   java:"Practice Java fundamentals with short exercises in OOP, validation and thread safety.",
   lld:"Work through design projects and exercises in UML, SOLID and design patterns.",
@@ -272,21 +272,14 @@ function renderRows(focusId) {
   const visibleIds = new Set(filtered.map(problem => problem[0]));
   const problemById = new Map(list.map(problem => [problem[0],problem]));
   const sections = (isFull ? fullPatterns : window.TRACKER_PATTERNS).filter(section => section.items.some(item => visibleIds.has(item.id)));
-  const shownBatches = new Set();
   byId("rows").innerHTML = sections.map(section => {
-    let heading = "";
-    if (section.batch && !shownBatches.has(section.batch.id)) {
-      const {id,title} = section.batch;
-      heading = `<div class="section-head expansion-heading"><h2 id="batch-${id}" tabindex="-1">Expansion batch ${section.batchNumber} · ${escapeHtml(title)}</h2></div>`;
-      shownBatches.add(id);
-    }
     const items = section.items.map(item => {
       if (!item.id) return `<p class="pattern-note">${trackerInline(item.text)}</p>`;
       if (!visibleIds.has(item.id)) return "";
       const [id,title,,,,initial] = problemById.get(item.id);
       return `<label class="pattern-question"><input type="checkbox" id="problem-${id}" data-problem="${id}" ${!cloudReady || pending.has(String(id)) ? "disabled" : ""} aria-label="Solved: ${escapeHtml(title)}" ${completed(id,initial) ? "checked" : ""}><span class="serial">${id}.</span><span>${trackerInline(item.text)}${questionTimestamps(id)}</span></label>`;
     }).join("");
-    return `${heading}<section class="pattern-section"><h3>${escapeHtml(section.title)}</h3>${items}</section>`;
+    return `<section class="pattern-section"><h3>${escapeHtml(section.title)}</h3>${items}</section>`;
   }).join("") || '<p class="empty">No matching problems. Try a different search or clear the filters.</p>';
   byId("result-count").textContent = `${filtered.length} problems across ${sections.length} sections`;
   if (focusId) (byId(focusId) || byId("rows").querySelector("input") || status.trigger).focus();
@@ -344,23 +337,10 @@ function renderRoute() {
   if (isStudy) renderStudy();
   else {
     if (route === "overview") renderOverview();
-    else if (isFull) byId("intro").innerHTML = `<div class="hero"><h1>Full DSA</h1><p>${fullProblems.length} of 400 questions added.</p></div>
-      <div class="reading-links" aria-label="Jump to an expansion batch">${expansionBatches.map(({id,title}) =>
-        `<button type="button" class="batch-link" data-batch-jump="${id}">${escapeHtml(title)}</button>`
-      ).join("")}</div>`;
+    else if (isFull) byId("intro").innerHTML = `<div class="hero"><h1>Full DSA</h1><p>${fullProblems.length} of 400 questions added.</p></div>`;
     else byId("intro").innerHTML = '<div class="hero"><h1>Practice problems</h1><p>Find a problem by topic or difficulty. Check it off when you solve it.</p></div>';
     renderDashboard();
     renderRows();
-    if (isFull) for (const button of byId("intro").querySelectorAll("[data-batch-jump]")) {
-      button.addEventListener("click",() => {
-        search.value = "";
-        filters.forEach(filter => filter.reset());
-        renderRows();
-        const heading = byId(`batch-${button.dataset.batchJump}`);
-        heading.focus({preventScroll:true});
-        heading.scrollIntoView();
-      });
-    }
   }
   document.title = `${route === "overview" ? "Interview notes" : labels[route]} · Nikhil Verma`;
   byId("intro").classList.remove("enter");
