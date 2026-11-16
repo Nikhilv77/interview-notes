@@ -1,7 +1,26 @@
 "use strict";
 
 const {problems, resources, study} = window.PREP_DATA;
-const labels = {overview:"Overview", dsa:"Practice problems", java:"Java", lld:"Low-level design", system:"System design"};
+const labels = {overview:"Overview", dsa:"Practice problems", "full-dsa":"Full DSA", java:"Java", lld:"Low-level design", system:"System design"};
+const fullDsaTitle = "Expansion batch 1 · Arrays, Hashing, and Prefix Sums";
+const difficultyDots = {Easy:"🟢",Medium:"🟡",Hard:"🔴"};
+const expansionProblems = window.FULL_DSA_EXPANSION.flatMap(({title,questions}) =>
+  questions.map(([id,,name,url,level]) => [id,name,url,title,level,false])
+);
+const fullProblems = [...problems,...expansionProblems];
+const fullPatterns = [
+  ...window.TRACKER_PATTERNS,
+  ...window.FULL_DSA_EXPANSION.map(({title,note,questions}) => ({
+    title,
+    items:[
+      {text:note},
+      ...questions.map(([id,number,name,url,level]) => ({
+        id,
+        text:`[${number}. ${name}](${url}) — ${difficultyDots[level]} **${level}**`
+      }))
+    ]
+  }))
+];
 const descriptions = {
   java:"Practice Java fundamentals with short exercises in OOP, validation and thread safety.",
   lld:"Work through design projects and exercises in UML, SOLID and design patterns.",
@@ -11,8 +30,11 @@ const studyResources = {java:["java","pdf"], lld:["roadmap","java"], system:["sy
 const storageKey = "prep-studio-v1";
 const byId = id => document.getElementById(id);
 const search = byId("query");
-const topics = [...new Set(problems.map(problem => problem[3]))].sort((a,b) => a.localeCompare(b));
-const topic = new FilterSelect(byId("topic"),"Topic",[["","All topics"],...topics.map(group => [group,group])],applyFilters);
+function topicOptions(list) {
+  const groups = [...new Set(list.map(problem => problem[3]))].sort((a,b) => a.localeCompare(b));
+  return [["","All topics"],...groups.map(group => [group,group])];
+}
+const topic = new FilterSelect(byId("topic"),"Topic",topicOptions(problems),applyFilters);
 const difficulty = new FilterSelect(byId("difficulty"),"Difficulty",[["","Any difficulty"],...["Easy","Medium","Hard"].map(level => [level,level])],applyFilters);
 const status = new FilterSelect(byId("status"),"Status",[["","Any status"],["done","Solved"],["todo","To do"]],applyFilters);
 const filters = [topic,difficulty,status];
@@ -70,7 +92,7 @@ function saveProgress(field, id) {
   byId("password-error").textContent = "";
   byId("progress-password").removeAttribute("aria-invalid");
   byId("password-title").textContent = done ? "Mark as completed" : "Undo completion";
-  const item = problems.find(item => String(item[0]) === id);
+  const item = fullProblems.find(item => String(item[0]) === id);
   const lesson = Object.values(study).flat().find(item => item.id === id);
   byId("password-description").textContent = item?.[1] || lesson?.title || "Update your progress";
   byId("password-submit").textContent = done ? "Mark done" : "Undo completion";
@@ -180,9 +202,10 @@ function theme() {
 }
 
 function stats() {
-  const total = {solved:0, count:problems.length};
+  const list = route === "full-dsa" ? fullProblems : problems;
+  const total = {solved:0, count:list.length};
   const levels = Object.fromEntries(["Easy","Medium","Hard"].map(level => [level,{solved:0,count:0}]));
-  for (const [id,,,,level,initial] of problems) {
+  for (const [id,,,,level,initial] of list) {
     levels[level].count++;
     if (completed(id,initial)) {
       total.solved++;
@@ -215,6 +238,7 @@ function renderOverview() {
   </div>`;
   byId("reading").innerHTML = `<div class="reading-links">
     <a href="#dsa">Practice problems <span aria-hidden="true">→</span></a>
+    <a href="#full-dsa">Full DSA <span aria-hidden="true">→</span></a>
     <a href="#java">Java <span aria-hidden="true">→</span></a>
     <a href="#lld">Low-level design <span aria-hidden="true">→</span></a>
     <a href="#system">System design <span aria-hidden="true">→</span></a>
@@ -224,7 +248,7 @@ function renderOverview() {
 function renderDashboard() {
   const {total,levels} = stats();
   const pct = percent(total.solved,total.count);
-  const next = milestones.find(milestone => milestone > total.solved);
+  const next = [...milestones,total.count].find(milestone => milestone > total.solved && milestone <= total.count);
   const note = next ? `Next milestone · ${next} solved` : "All problems solved";
   byId("metrics").innerHTML = `<div class="progress-heading"><div><h2>Practice progress</h2><p><strong>${total.solved} of ${total.count}</strong> problems solved</p></div><span>${pct.toFixed(1)}%</span></div>
     <div class="progress-track" role="progressbar" aria-label="Problems solved" aria-valuemin="0" aria-valuemax="${total.count}" aria-valuenow="${total.solved}"><span style="width:${pct}%"></span></div>
@@ -234,23 +258,30 @@ function renderDashboard() {
 function renderRows(focusId) {
   const query = search.value.trim().toLowerCase();
   byId("reset-filters").hidden = !search.value && !filters.some(filter => filter.value);
-  const filtered = problems.filter(([id,title,url,group,level,initial]) =>
+  const isFull = route === "full-dsa";
+  const list = isFull ? fullProblems : problems;
+  const filtered = list.filter(([id,title,url,group,level,initial]) =>
     (!query || `${id} ${title} ${group} ${url}`.toLowerCase().includes(query)) &&
     (!topic.value || group === topic.value) &&
     (!difficulty.value || level === difficulty.value) &&
     (!status.value || completed(id,initial) === (status.value === "done"))
   );
   const visibleIds = new Set(filtered.map(problem => problem[0]));
-  const problemById = new Map(problems.map(problem => [problem[0],problem]));
-  const sections = window.TRACKER_PATTERNS.filter(section => section.items.some(item => visibleIds.has(item.id)));
+  const problemById = new Map(list.map(problem => [problem[0],problem]));
+  const sections = (isFull ? fullPatterns : window.TRACKER_PATTERNS).filter(section => section.items.some(item => visibleIds.has(item.id)));
+  let showExpansionHeading = isFull;
   byId("rows").innerHTML = sections.map(section => {
+    const isExpansion = section.items.some(item => item.id > problems.length);
+    const heading = showExpansionHeading && isExpansion
+      ? `<div class="section-head expansion-heading"><h2>${fullDsaTitle}</h2></div>` : "";
+    if (isExpansion) showExpansionHeading = false;
     const items = section.items.map(item => {
       if (!item.id) return `<p class="pattern-note">${trackerInline(item.text)}</p>`;
       if (!visibleIds.has(item.id)) return "";
       const [id,title,,,,initial] = problemById.get(item.id);
       return `<label class="pattern-question"><input type="checkbox" id="problem-${id}" data-problem="${id}" ${!cloudReady || pending.has(String(id)) ? "disabled" : ""} aria-label="Solved: ${escapeHtml(title)}" ${completed(id,initial) ? "checked" : ""}><span class="serial">${id}.</span><span>${trackerInline(item.text)}${questionTimestamps(id)}</span></label>`;
     }).join("");
-    return `<section class="pattern-section"><h3>${escapeHtml(section.title)}</h3>${items}</section>`;
+    return `${heading}<section class="pattern-section"><h3>${escapeHtml(section.title)}</h3>${items}</section>`;
   }).join("") || '<p class="empty">No matching problems. Try a different search or clear the filters.</p>';
   byId("result-count").textContent = `${filtered.length} problems across ${sections.length} sections`;
   if (focusId) (byId(focusId) || byId("rows").querySelector("input") || status.trigger).focus();
@@ -285,7 +316,15 @@ function renderLessons() {
 
 function renderRoute() {
   const candidate = location.hash.slice(1);
+  const wasFull = route === "full-dsa";
   route = Object.hasOwn(labels,candidate) ? candidate : "overview";
+  const isFull = route === "full-dsa";
+  if (wasFull !== isFull) {
+    topic.setOptions(topicOptions(isFull ? fullProblems : problems));
+    search.value = "";
+    difficulty.reset();
+    status.reset();
+  }
   const isStudy = Object.hasOwn(study,route);
   document.body.dataset.route = route;
   filters.forEach(filter => filter.close());
@@ -293,16 +332,26 @@ function renderRoute() {
     if (link.hash === "#" + route) link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   }
-  byId("tracker").hidden = route !== "dsa";
+  byId("tracker").hidden = route !== "dsa" && !isFull;
   byId("reading").hidden = route !== "overview";
   byId("metrics").hidden = isStudy;
   byId("study").hidden = !isStudy;
   if (isStudy) renderStudy();
   else {
     if (route === "overview") renderOverview();
+    else if (isFull) byId("intro").innerHTML = `<div class="hero"><h1>Full DSA</h1><p>${fullProblems.length} of 400 questions added. Start with the original 220 or jump to the <button type="button" class="text-link batch-link" id="jump-expansion">arrays, hashing, and prefix sums batch</button>.</p></div>`;
     else byId("intro").innerHTML = '<div class="hero"><h1>Practice problems</h1><p>Find a problem by topic or difficulty. Check it off when you solve it.</p></div>';
     renderDashboard();
     renderRows();
+    if (isFull) byId("jump-expansion").addEventListener("click",() => {
+      search.value = "";
+      filters.forEach(filter => filter.reset());
+      renderRows();
+      const heading = document.querySelector(".expansion-heading h2");
+      heading.tabIndex = -1;
+      heading.focus({preventScroll:true});
+      heading.scrollIntoView();
+    });
   }
   document.title = `${route === "overview" ? "Interview notes" : labels[route]} · Nikhil Verma`;
   byId("intro").classList.remove("enter");

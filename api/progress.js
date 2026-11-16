@@ -1,6 +1,7 @@
 const {list,put} = require('@vercel/blob');
 const {randomUUID,createHash,timingSafeEqual} = require('node:crypto');
-const validIds = new Set(require('../lib/progress-ids.json'));
+const expansionIds = require('../full-dsa.js').flatMap(({questions}) => questions.map(([id]) => String(id)));
+const validIds = new Set([...require('../lib/progress-ids.json'), ...expansionIds]);
 const prefix = 'progress/v2/';
 const seed = require('../lib/progress-seed.json');
 

@@ -198,3 +198,7 @@ footer {margin-top:50px;padding:12px 0 26px}
 .modal-actions button:hover {opacity:.85}
 .modal-actions button:disabled {opacity:.55;cursor:wait}
 @media(max-width:480px) {.password-dialog {padding:26px}.password-dialog h2 {font-size:29px}}
+
+.batch-link {padding:0;border:0;background:none;color:var(--blue);font:inherit;text-decoration:underline;text-underline-offset:3px;text-align:left}
+.expansion-heading {margin:56px 0 18px}
+.expansion-heading h2 {scroll-margin-top:24px}

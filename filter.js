@@ -22,16 +22,7 @@ class FilterSelect {
     this.trigger = root.querySelector("button");
     this.display = root.querySelector(".filter-value");
     this.list = root.querySelector("ul");
-    this.items = options.map(([,title],index) => {
-      const item = document.createElement("li");
-      item.id = `${id}-option-${index}`;
-      item.setAttribute("role","option");
-      item.dataset.index = index;
-      item.textContent = title;
-      this.list.append(item);
-      return item;
-    });
-    this.update();
+    this.setOptions(options);
     this.trigger.addEventListener("click",() => this.list.hidden ? this.open() : this.close());
     this.trigger.addEventListener("keydown",event => this.handleKey(event));
     document.addEventListener("focusin",event => {
@@ -47,6 +38,23 @@ class FilterSelect {
     document.addEventListener("pointerdown",event => {
       if (!root.contains(event.target)) this.close();
     });
+  }
+
+  setOptions(options) {
+    this.close();
+    this.options = options;
+    this.list.replaceChildren();
+    this.active = 0;
+    this.items = options.map(([,title],index) => {
+      const item = document.createElement("li");
+      item.id = `${this.root.id}-option-${index}`;
+      item.setAttribute("role","option");
+      item.dataset.index = index;
+      item.textContent = title;
+      this.list.append(item);
+      return item;
+    });
+    this.reset();
   }
 
   get value() {
@@ -142,3 +150,4 @@ class FilterSelect {
     }
   }
 }
+
